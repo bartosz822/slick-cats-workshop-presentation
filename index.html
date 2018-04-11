@@ -10,7 +10,7 @@
 		<link rel="stylesheet" href="css/theme/solarized.css">
 
 		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+		<link rel="stylesheet" href="lib/css/atom-one-dark.css">
 
 		<!-- Printing and PDF exports -->
 		<script>
@@ -24,7 +24,7 @@
 	<body>
 
 		<img src="imgs/vl.png" alt="Virtus Lab"
-     style="background: none; border: none; box-shadow: none; position: absolute; bottom:10%; right: 10%;"/>
+     style="background: none; border: none; box-shadow: none; position: absolute; bottom:10%; right: 10%; z-index: 1;"/>
 
 		<div class="reveal">
 			<div class="slides">
@@ -35,8 +35,22 @@
 					#### Szymon Tracz Bartosz Radzyński
 
 				</section>
-				<section data-markdown>
+				<section data-background-image="imgs/slick.png" data-background-size="180px 180px" data-background-repeat="repeat" data-background-color="white">Slick</section>
+				<section data-background-image="imgs/jumbotron_pattern.png" data-background-size="249px 244px" data-background-repeat="repeat" data-background-color="#292E53">Cats</section>
+				<section>
+					<pre>
+						<code data-trim data-noescape class="scala">
+							abstract class IdRepository[Entity, Table <: IdTable[Entity]](val query: TableQuery[Table]) {
 
+								protected def byId = Compiled { (id: Rep[Long]) => query.filter(_.id === id) }
+
+								def save(entity: Entity): DBIO[Long] = query.returning(query.map(_.id)) += entity
+								def findById(id: Long): DBIO[Option[Entity]] = byId(id).result.headOption
+								def findAll(): DBIO[Seq[Entity]] = query.result
+								def deleteById(id: Long): DBIO[Unit] = byId(id).delete >> DBIO.successful(())
+							}
+						</code>
+					</pre>
 				</section>
 			</div>
 		</div>
@@ -52,7 +66,8 @@
 					{ src: 'plugin/notes/notes.js', async: true },
 					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
 				],
-
+				width: '90%',
+				height: '90%',
 				progress: true,
 				mouseWheel: false,
 				history: true,
