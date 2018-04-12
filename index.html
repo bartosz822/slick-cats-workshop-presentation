@@ -29,13 +29,95 @@
 		<div class="reveal">
 			<div class="slides">
 				<section data-markdown>
-					## Slick Cats Workshop
+						## Slick Cats Workshop
 
 
-					#### Szymon Tracz Bartosz Radzyński
+						#### Szymon Tracz Bartosz Radzyński
+					</section>
+				<section data-background-image="imgs/slick.png" data-background-size="180px 180px" data-background-repeat="repeat" data-background-color="white">
+					<section data-markdown>
+						# Slick
+					
 
+						##### Functional-relational mapping
+					</section>
+					<section>
+						Slick is a modern database query and access library for Scala. It allows you to work with stored data almost as if you were using Scala collections while at the same time giving you full control over when a database access happens and which data is transferred. You can write your database queries in Scala instead of SQL, thus profiting from the static checking, compile-time safety and compositionality of Scala. Slick features an extensible query compiler which can generate code for different backends.
+					</section>
+					<section data-markdown class="center">
+						### Case Class definition
+						```scala
+						case class Cat(
+							id: Option[Long],
+  							name: String,
+  							breedId: Long,
+  							sex: String,
+  							age: Int
+						)
+						```
+					</section>
+					<section data-markdown>
+						### Table definition
+						```scala
+						class Cats(tag: Tag) extends IdTable[Cat](tag, "cats") {
+
+						  def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+						  def name = column[String]("name")
+						  def breedId = column[Long]("breed_id")
+						  def sex = column[String]("sex")
+						  def age = column[Int]("age")
+
+						  def breedFk = foreignKey("breed_fk", breedId, Breeds.query)(_.id)
+
+						  def *  =  (id.?, name, breedId, sex, age) <> (Cat.tupled, Cat.unapply)
+						}
+
+						object Cats {
+						  lazy val query = TableQuery[Cats]
+						}
+						```
+					</section>
+					<section data-markdown>
+						### Adding to table
+						```scala
+						Cats.query ++ Cat(id = None, name = "Bella", breedId = 2, sex = "F", age = 3)
+						```
+						### Accesing table
+						```scala
+						Cats.query.forEach(println)
+
+						Cats.filer(_.age < 5)
+
+						Cats.map(_.name).forEach(println)
+						```
+					</section>
+					<section data-markdown>
+						### Running an action
+						
+						```scala
+						import slick.jdbc.H2Profile.api._
+						import scala.concurrent.ExecutionContext.Implicits.global
+
+						```
+
+						```scala
+						catsDb = {
+							url = "jdbc:h2:mem:cats"
+  							driver = org.h2.Driver
+  							connectionPool = disabled
+  							keepAliveConnection = true
+						}
+						```
+						
+						```scala
+						val db = Database.forConfig("catsDb")
+						
+						val action = Cats.query.forEach(println)
+
+						val futureResult = db.run(action)
+						```
+					</section>
 				</section>
-				<section data-background-image="imgs/slick.png" data-background-size="180px 180px" data-background-repeat="repeat" data-background-color="white">Slick</section>
 				<section data-background-image="imgs/jumbotron_pattern.png" data-background-size="249px 244px" data-background-repeat="repeat" data-background-color="#292E53">Cats</section>
 				<section>
 					<pre>
