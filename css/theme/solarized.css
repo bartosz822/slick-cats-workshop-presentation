@@ -156,7 +156,11 @@ body {
 
 .reveal code {
   font-family: monospace;
-  text-transform: none; }
+  text-transform: none; 
+  background: #3F3F3F;
+  margin-left: 5%;
+  margin-right: 5%;
+}
 
 .reveal pre code {
   display: block;
