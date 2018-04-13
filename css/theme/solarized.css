@@ -156,17 +156,18 @@ body {
 
 .reveal code {
   font-family: monospace;
-  text-transform: none; 
-  background: #3F3F3F;
-  margin-left: 5%;
-  margin-right: 5%;
+  text-transform: none;
+  background: rgba(50, 50, 50, 0.85); 
+  border-radius: 25px;
+  margin-left: 3%;
+  margin-right: 3%;
 }
 
 .reveal pre code {
   display: block;
-  padding: 5px;
+  padding: 15px;
   overflow: auto;
-  max-height: 400px;
+  max-height: 500px;
   word-wrap: normal; }
 
 .reveal table {
