@@ -4,7 +4,8 @@
 .cats h3,
 .cats h4,
 .cats h5,
-.cats h6 {
+.cats h6,
+.cats p {
     color: white;
 }
 
@@ -15,4 +16,8 @@
 .reveal .progress {
     background: rgba(0, 0, 0, 0.2);
     color: #139c48;
+}
+
+.white-behind {
+    background-color: white;
 }

@@ -47,7 +47,7 @@
 							<img src="imgs/play.png" height="20%" width="20%">
 							<br>
 					</section>
-					<section>
+					<section data-background-color="white">
 						<img src="imgs/slick2.png">
 						<img src="imgs/cats-logo.png">
 					</section>
@@ -324,14 +324,14 @@
 							def show(a: A): String
 						}
 
-						implicit val showCat = new Show[Cat] {
+						val showCat = new Show[Cat] {
 							def show(cat: Cat): String = cat.name + ", " + cat.breedName
 						}
 
-						def present[A](a: A)(implicit s: Show[A]) = "This is " + s.show(a)
+						def present[A](a: A, s: Show[A]) = "This is " + s.show(a)
 
 						val skipper = Cat("Skipper", "Maine Coon")
-						present(skipper)
+						present(skipper, showCat) //we have to provide
 						// = "This is Skipper, Maine Coon"
 						```
 					</section>
@@ -339,17 +339,17 @@
 						<script type="text/template">
 						###### Ad hoc polymorphism
 						```scala
-						implicit val showCat = new Show[Cat] {
+						val showCat = new Show[Cat] {
 						//we make cat showable by telling how to show it and not by changing the cat itself
 							def show(cat: Cat): String = cat.name + ", " + cat.breedName
 						}
-						def present[A](a: A)(implicit s: Show[A]) = "This is " + s.show(a)
+						def present[A](a: A, s: Show[A]) = "This is " + s.show(a)
 						```
 
 						###### Implicit argument as a constraint <!-- .element: class="fragment" data-fragment-index="1" -->
 						```scala
-						def present[ThingType](thing: ThingType)(implicit s: Show[ThingType])
-						//This signature says "We can present a thing if Show instance for ThingType is provided"
+						def present[ThingType](thing: ThingType, s: Show[ThingType])
+						//This signature says "We can present a thing, but you have to provide Show instance for ThingType"
 						```
 						<!-- .element: class="fragment" data-fragment-index="1" -->
 
@@ -358,7 +358,7 @@
 						case class Cat(name: String, breedName: String)
 						//cat is just a data structure, no logic inside
 
-						implicit val showCat = new Show[Cat] { //Show instance for cat
+						val showCat = new Show[Cat] { //Show instance for cat
 							def show(cat: Cat): String = cat.name + ", " + cat.breedName //logic is here
 						}
 						```
@@ -367,27 +367,215 @@
 					</section>
 					<section data-markdown>
 						### Typeclass resolution in Scala
+						```scala
+						def present[A](a: A, s: Show[A]) = "This is " + s.show(a)
+
+						present(skipper, showCat)
+						//we have to pass showCat instance every time
+						```
+					</section>
+					<section data-markdown>
+						### Implicits to the rescue
+						```scala
+						implicit val showCat = new Show[Cat] {
+							def show(cat: Cat): String = cat.name + ", " + cat.breedName
+						}
+
+						def present[A](a: A)(implicit s: Show[A]) = "This is " + s.show(a)
+						//compiler will automatically search for Show[A] by its type
+						//it is defined above so that's not a hard task
+
+						present(skipper)
+						//we said that we know how to show cat a few lines above, we don't have to repeat it
+						```
+					</section>
+					<section data-markdown>
+						### Cat, instances and logic - separated
+						```scala
+						package instances
+
+						object CatInstances {
+							implicit val showCat = new Show[Cat] {
+								def show(cat: Cat): String = cat.name + ", " + cat.breedName
+							}
+						}
+						```
+						```scala
+						package services
+
+						object Presenter {
+							def present[A](a: A)(implicit s: Show[A]) = "This is " + s.show(a)
+						}
+						```
+						```scala
+						import model.Cat
+						import instances.CatInstances.showCat
+						import services.Presenter.present
+
+						present(skipper)
+						```
 					</section>
 					<section data-markdown>
 						### Postfix operators
+						```scala
+						implicit class ShowOps[A](a: A) {
+							def show(implicit s: Show[A]) = s.show(a)
+						}
+						```
+						```scala
+						val skipper = Cat("Skipper", "Maine Coon")
+						skipper.show
+						```
 					</section>
 					<section data-markdown>
 						### Monad
+						```scala
+						def pure[A](a: A): M[A]
+						//Option
+						def pure[A](a: A) = Some(a)
+						//List
+						def pure[A](a: A) = List(a)
+						//DBIO
+						def pure[A](a: A) = DBIO.successful(a)
+						```
+						```scala
+						def flatMap[A, B](fa: M[A])(f: (A) => M[B]): M[B] //bind in Haskell world
+						//in many cases implemented as
+						fa.flatMap(f)
+						```
+						If something is a monad, it's also Applicative and Functor
 					</section>
 					<section data-markdown>
 						### Option T
+						###### Convenience data type for M[Option[A]]
+						```scala
+						def tryFindCat(id: Long): OptionT[DBIO, Cat]
+						def tryFindBreedForCat(cat: Cat): OptionT[DBIO, Breed]
+						def getFavoriteFood(cat: Cat): Food
+
+						val cat: OptionT[DBIO, Cat] = repository.tryFindCat(id)
+						val breed: OptionT[DBIO, Breed] = cat.flatMap(repository.tryFindBreedForCat)
+						val favoriteFood: OptionT[DBIO, Food] = cat.map(getFavoriteFood)
+						```
 					</section>
 					<section data-markdown>
 						### Either T
+						###### Convenience data type for M[Either[A, B]]
+						```scala
+						def tryFindCat(id: Long): EitherT[DBIO, Error, Cat]
+						def tryFindBreedForCat(cat: Cat): EitherT[DBIO, Error, Breed]
+						def getFavoriteFood(cat: Cat): Food
+
+						val cat: EitherT[DBIO, Error, Cat] = repository.tryFindCat(id)
+						val breed: EitherT[DBIO, Error, Breed] = cat.flatMap(repository.tryFindBreedForCat)
+						val favoriteFood: EitherT[DBIO, Error, Food] = cat.map(getFavoriteFood)
+						```
 					</section>
 					<section data-markdown>
+						### Wrapping
+						```scala
+						def tryFindCatBefore(id: Long): DBIO[Option[Cat]]
+
+						def tryFindCatAfter(id: Long): OptionT[DBIO, Cat] = OptionT(tryFindCatBefore(id))
+						```
+					</section>
+					<section data-markdown>
+						<script type="text/template">
 						### Useful things
+						.as - map without _ =>
+						<!-- .element: class="fragment" data-fragment-index="1" -->
+						```scala
+						def updateDatabase(object: NecessaryObject): DBIO[UpdateResult]
+
+						def computation(arg: Long): DBIO[NecessaryObject] = {
+							val necessaryObject: NecessaryObject = makeComputation(arg)
+							updateDatabase(necessaryObject).as(necessaryObject) //equivalent of .map(_ => necessaryObject)
+						}
+						```
+						<!-- .element: class="fragment" data-fragment-index="1" -->
+						.void - as without (())
+						<!-- .element: class="fragment" data-fragment-index="2" -->
+						```scala
+						def computation(arg: Long): DBIO[UnnecessaryObject]
+						def niceInterface(arg: Long): DBIO[Unit] = computation(arg).void //equivalent of .map(_ => ())
+						```
+						<!-- .element: class="fragment" data-fragment-index="2" -->
+                        </script>
+					</section>
+					<section data-markdown>
+						<script type="text/template">
+							### Useful things
+							.sequence - swapping things
+							<!-- .element: class="fragment" data-fragment-index="1" -->
+							```scala
+							val actions: List[DBIO[Cat]] = List(fetchMaineCoon(id), fetchPersian(id))
+							val catsAction: DBIO[List[Cat]] = actions.sequence
+							```
+							<!-- .element: class="fragment" data-fragment-index="1" -->
+							.traverse - map + sequence
+							<!-- .element: class="fragment" data-fragment-index="2" -->
+							```scala
+							val cats: List[Cat] = List(molly, skipper)
+							val breeds: DBIO[List[Breed]] = cats.traverse(fetchBreed) //equivalent of .map(fetchBreed).sequence
+							```
+							<!-- .element: class="fragment" data-fragment-index="2" -->
+						</script>
 					</section>
 					<section data-markdown>
 						### Semigroup
+						###### Adding things up
+						```scala
+						def combine(x: A, y: A): A
+						```
+						```scala
+						List(1, 2, 3).combine(List(4, 5)) //List(1, 2, 3, 4, 5)
+						1.combine(2) // 3
+						```
+					</section>
+					<section data-markdown>
+						### Semigroup
+						###### Adding wrappers if contained elements can be added
+						```scala
+						def combine(fx: DBIO[A], fy: DBIO[A])(implicit s: Semigroup[A]): DBIO[A] = {
+							fx.zip(fy).map { case (x, y) => x.combine(y) }
+						}
+						```
+						```scala
+						def fetchPersian: DBIO[List[Cat]]
+						def fetchMaineCoon: DBIO[List[Cat]]
+
+						fetchPersian.combine(fetchMaineCoon) //DBIO[List[Cat]]
+						```
 					</section>
 					<section data-markdown>
 						### Validated vs. Either
+						```scala
+						valid[List[String], Int](1) combine
+							valid[List[String], Int](2) combine
+							valid[List[String], Int](3)
+						//Valid(6)
+						```
+						```scala
+						Right[List[String], Int](1) combine
+							Right[List[String], Int](2) combine
+							Right[List[String], Int](3)
+						//Right(6)
+						```
+					</section>
+					<section data-markdown>
+						### Validated vs. Either
+						```scala
+						invalid[List[String], Int](List("err1")) combine
+							invalid[List[String], Int](List("err2")) combine
+							valid[List[String], Int](3)
+						//Invalid(List("err1", "err2"))
+						```
+						```scala
+						Left[List[String], Int](List("err1")) combine
+							Left[List[String], Int](List("err2")) combine
+							Right[List[String], Int](3)
+						//Left(List("err1"))
+						```
 					</section>
 				</section>
 
@@ -400,11 +588,22 @@
 						# Drawbacks
 					</section>
 					<section data-markdown>
-						### Failing type inference
-						DbioAction, FlatMapAction, etc.
-					</section>
-					<section data-markdown>
-						Are there any more drawbacks?
+						<script type="text/template">
+						### Drawbacks
+						Failing type inference
+						<!-- .element: class="fragment" data-fragment-index="1" -->
+						```scala
+						DBIO[+R] is really DBIOAction[R, NoStream, All]
+						DBIOAction[+R, +S <: NoStream, -E <: Effect]
+
+						val cats: Seq[Cat]
+						cats.traverse(fetchBreed) //compilation fails
+						cats.traverse[DBIO, Breed](fetchBreed) //now it's ok
+						```
+						<!-- .element: class="fragment" data-fragment-index="1" -->
+						Extensive usage of implicits slows down compilation
+						<!-- .element: class="fragment" data-fragment-index="2" -->
+						</script>
 					</section>
 				</section>
 
@@ -437,9 +636,19 @@
 						```
 						https://github.com/VirtusLab/unicorn
 					</section>
-					<section data-background-iframe="https://www.scala-exercises.org/cats" data-background-interactive>
-						<h2>Cats exercises</h2>
+					<section data-background-iframe="https://typelevel.org/cats/typeclasses.html" data-background-interactive>
+						<h2 class="white-behind">typelevel.org/cats/typeclasses</h2>
 					</section>
+					<section data-background-iframe="https://www.scala-exercises.org/cats" data-background-interactive>
+						<h2 class="white-behind">www.scala-exercises.org/cats</h2>
+					</section>
+					<section data-background-iframe="http://learnyouahaskell.com" data-background-interactive>
+						<h2 class="white-behind">learnyouahaskell.com</h2>
+					</section>
+					<section data-background-iframe="herding/herding-cats.html" data-background-interactive>
+						<h2 class="white-behind">eed3si9n.com/herding-cats</h2>
+					</section>
+
 				</section>
 			</div>
 		</div>
