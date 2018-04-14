@@ -1,0 +1,18 @@
+
+.cats h1,
+.cats h2,
+.cats h3,
+.cats h4,
+.cats h5,
+.cats h6 {
+    color: white;
+}
+
+.reveal .controls {
+    color: #139c48;
+}
+
+.reveal .progress {
+    background: rgba(0, 0, 0, 0.2);
+    color: #139c48;
+}
