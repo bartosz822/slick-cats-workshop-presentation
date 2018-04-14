@@ -11,6 +11,7 @@
 
 		<!-- Theme used for syntax highlighting of code -->
 		<link rel="stylesheet" href="lib/css/atom-one-dark.css">
+		<link rel="stylesheet" href="css/custom.css">
 
 		<!-- Printing and PDF exports -->
 		<script>
@@ -23,7 +24,7 @@
 	</head>
 	<body>
 
-		<img src="imgs/vl.png" alt="Virtus Lab"
+		<img src="imgs/vl-logo.png" alt="Virtus Lab"
      style="background: none; border: none; box-shadow: none; position: absolute; bottom:10%; right: 10%; z-index: 1;"/>
 
 		<div class="reveal">
@@ -33,8 +34,8 @@
 
 
 						#### Szymon Tracz Bartosz Radzyński
-					</section>
-				<section data-background-image="imgs/slick.png" data-background-size="180px 180px" data-background-repeat="repeat" data-background-color="white">
+				</section>
+				<section data-background-image="imgs/slick-logo-background.png" data-background-size="180px 180px" data-background-repeat="repeat" data-background-color="white">
 					<section data-markdown>
 						# Slick
 					
@@ -93,7 +94,7 @@
 					</section>
 					<section data-markdown>
 						### Running an action
-						
+
 						```scala
 						import slick.jdbc.H2Profile.api._
 						import scala.concurrent.ExecutionContext.Implicits.global
@@ -118,21 +119,186 @@
 						```
 					</section>
 				</section>
-				<section data-background-image="imgs/jumbotron_pattern.png" data-background-size="249px 244px" data-background-repeat="repeat" data-background-color="#292E53">Cats</section>
+
+
+				<!--SLICK + CATS - why?-->
+
 				<section>
-					<pre>
-						<code data-trim data-noescape class="scala">
-							abstract class IdRepository[Entity, Table <: IdTable[Entity]](val query: TableQuery[Table]) {
+					<section>
+						<h2>Slick + cats</h2>
+						<img data-src="imgs/slick-cats-puzzle.png" style="width: 30%; height: 30%; background: none; border: none; box-shadow: none;">
+					</section>
+				</section>
 
-								protected def byId = Compiled { (id: Rep[Long]) => query.filter(_.id === id) }
+				<!--CATS-->
 
-								def save(entity: Entity): DBIO[Long] = query.returning(query.map(_.id)) += entity
-								def findById(id: Long): DBIO[Option[Entity]] = byId(id).result.headOption
-								def findAll(): DBIO[Seq[Entity]] = query.result
-								def deleteById(id: Long): DBIO[Unit] = byId(id).delete >> DBIO.successful(())
-							}
-						</code>
-					</pre>
+
+				<section class="cats" data-background-image="imgs/cats-logo-background.png" data-background-size="249px 244px" data-background-repeat="repeat" data-background-color="#292E53">
+					<section data-markdown>
+						# Cats
+					</section>
+					<section data-background-image="imgs/cats-hierarchy.svg" data-background-position="right 60%">
+						<aside class="notes">
+							That's only to scare you a bit
+						</aside>
+					</section>
+					<section data-markdown>
+						# Typeclass
+					</section>
+					<section data-markdown>
+						### The problem
+						```scala
+						case class Cat(name: String, breedName: String)
+
+						def present = ??? //this one needs to be generic
+
+						val skipper = Cat("Skipper", "Maine Coon")
+						present(skipper)
+						// = "This is Skipper, Maine Coon"
+						```
+					</section>
+					<section data-markdown>
+						### OOP
+						```scala
+						trait Showable {
+							def show: String
+						}
+						case class Cat(name: String, breedName: String) extends Showable {
+							def show: String = name + ", " + breedName
+						}
+
+						def present(showable: Showable) = "This is " + showable.show
+
+						val skipper = Cat("Skipper", "Maine Coon")
+						present(skipper)
+						// = "This is Skipper, Maine Coon"
+						```
+					</section>
+					<section data-markdown>
+						### Typeclass
+						```scala
+						case class Cat(name: String, breedName: String)
+
+						trait Show[A] {
+							def show(a: A): String
+						}
+
+						implicit val showCat = new Show[Cat] {
+							def show(cat: Cat): String = cat.name + ", " + cat.breedName
+						}
+
+						def present[A](a: A)(implicit s: Show[A]) = "This is " + s.show(a)
+
+						val skipper = Cat("Skipper", "Maine Coon")
+						present(skipper)
+						// = "This is Skipper, Maine Coon"
+						```
+					</section>
+					<section data-markdown>
+						<script type="text/template">
+						###### Ad hoc polymorphism
+						```scala
+						implicit val showCat = new Show[Cat] {
+						//we make cat showable by telling how to show it and not by changing the cat itself
+							def show(cat: Cat): String = cat.name + ", " + cat.breedName
+						}
+						def present[A](a: A)(implicit s: Show[A]) = "This is " + s.show(a)
+						```
+
+						###### Implicit argument as a constraint <!-- .element: class="fragment" data-fragment-index="1" -->
+						```scala
+						def present[ThingType](thing: ThingType)(implicit s: Show[ThingType])
+						//This signature says "We can present a thing if Show instance for ThingType is provided"
+						```
+						<!-- .element: class="fragment" data-fragment-index="1" -->
+
+						###### Logic about data structures is part of their instances <!-- .element: class="fragment" data-fragment-index="2" -->
+						```scala
+						case class Cat(name: String, breedName: String)
+						//cat is just a data structure, no logic inside
+
+						implicit val showCat = new Show[Cat] { //Show instance for cat
+							def show(cat: Cat): String = cat.name + ", " + cat.breedName //logic is here
+						}
+						```
+						<!-- .element: class="fragment" data-fragment-index="2" -->
+						</script>
+					</section>
+					<section data-markdown>
+						### Typeclass resolution in Scala
+					</section>
+					<section data-markdown>
+						### Postfix operators
+					</section>
+					<section data-markdown>
+						### Monad
+					</section>
+					<section data-markdown>
+						### Option T
+					</section>
+					<section data-markdown>
+						### Either T
+					</section>
+					<section data-markdown>
+						### Useful things
+					</section>
+					<section data-markdown>
+						### Semigroup
+					</section>
+					<section data-markdown>
+						### Validated vs. Either
+					</section>
+				</section>
+
+
+				<!--Drawbacks-->
+
+
+				<section>
+					<section data-markdown>
+						# Drawbacks
+					</section>
+					<section data-markdown>
+						### Failing type inference
+						DbioAction, FlatMapAction, etc.
+					</section>
+					<section data-markdown>
+						Are there any more drawbacks?
+					</section>
+				</section>
+
+
+				<!--Extras-->
+
+
+				<section>
+					<section data-markdown>
+						# Extras
+					</section>
+					<section data-markdown>
+						### Unicorn
+						```scala
+						/** Id class for type-safe joins and queries. */
+						case class UserId(id: Long) extends AnyVal with BaseId[Long]
+
+						case class UserRow(
+							id: Option[UserId],
+							email: String,
+							name: String
+						) extends WithId[Long, UserId]
+
+						/** Table definition for users. */
+						class Users(tag: Tag) extends IdTable[UserId, UserRow](tag, "USERS") {
+							def email = column[String]("EMAIL")
+							def name = column[String]("LAST_NAME")
+							override def * = (id.?, email, name) <> (UserRow.tupled, UserRow.unapply)
+						}
+						```
+						https://github.com/VirtusLab/unicorn
+					</section>
+					<section data-background-iframe="https://www.scala-exercises.org/cats" data-background-interactive>
+						<h2>Cats exercises</h2>
+					</section>
 				</section>
 			</div>
 		</div>
