@@ -35,15 +35,103 @@
 
 						#### Szymon Tracz Bartosz Radzyński
 				</section>
+				<section>
+					<section>
+							<h1>Who are we?<h1>
+					</section>
+					<section>
+							<img src="imgs/lemma.png">
+							<br>
+							<img src="imgs/scala.png" height="20%" width="20%">
+							<br>
+							<img src="imgs/play.png" height="20%" width="20%">
+							<br>
+					</section>
+					<section>
+						<img src="imgs/slick2.png">
+						<img src="imgs/cats-logo.png">
+					</section>
+				</section>
+				<section data-markdown>
+					### Plan for today
+
+
+					1. Cloning workshop repository and preparing setup
+					2. Presentation
+					3. Solving exercises
+					4. Summary
+
+				</section>
+				<section data-markdown>
+					#### Link for presentation
+
+					#### https://bartosz822.github.io/slick-cats-workshop-presentation
+				</section>
+				<section data-markdown>
+					#### Clone repository:
+
+					#### https://github.com/bartosz822/slick-cats-workshop
+				</section>
+				<section >
+					<section data-markdown>
+					## Setup
+					</section>
+					<section>
+					<h2>Recommended IDE<h2>
+					<img src="imgs/idea.png" height="30%" width="30%">
+					</section>
+					<section data-markdown>
+					## Setup for IntelliJ
+
+					* Open project as an sbt project
+					* Wait for SBT to download all dependencies and setup project
+					* Make sure everything compiles
+					* Run tests in excercises folder (they should all fail)
+
+
+					*If you have any problems don't hestitate to ask for our help :)*
+					</section>
+				</section>
+				<section>
+					<section>
+						<h3>Whorkshop db schema<h3>
+						<img src="imgs/schema.png">
+					</section>
+					<section data-markdown>
+						### Example data inserts
+						### data.TestData
+					</section>
+				</section>
+				<section data-markdown>
+					## Why slick?
+					* Efficiency with Pre-Optimization
+					* Type Safety
+					* Productive, Composable Model for Building Queries
+					* Better separation of businness logic from db
+					* Free and open source
+				</section>
 				<section data-background-image="imgs/slick-logo-background.png" data-background-size="180px 180px" data-background-repeat="repeat" data-background-color="white">
 					<section data-markdown>
 						# Slick
 					
 
-						##### Functional-relational mapping
+						##### Scala Language-Integrated Connection Kit
+					</section>
+					<section data-markdown>
+						>Slick is a modern database query and access library for Scala. It allows you to work with stored data almost as if you were using Scala collections while at the same time giving you full control over when a database access happens and which data is transferred. You can write your database queries in Scala instead of SQL, thus profiting from the static checking, compile-time safety and compositionality of Scala. Slick features an extensible query compiler 	which can generate code for different backends.
 					</section>
 					<section>
-						Slick is a modern database query and access library for Scala. It allows you to work with stored data almost as if you were using Scala collections while at the same time giving you full control over when a database access happens and which data is transferred. You can write your database queries in Scala instead of SQL, thus profiting from the static checking, compile-time safety and compositionality of Scala. Slick features an extensible query compiler which can generate code for different backends.
+						<h2>Slick Basics</h2>
+					</section>
+					<section data-markdown>
+						> Importing apropriate profile for db. A profile’s api object contains all commonly needed imports and other parts of Slick such as database handling.
+						```scala
+						import slick.jdbc.H2Profile.api._
+						```
+						> Slick’s API is fully asynchronous and runs database calls in a separate thread pool. For running user code in composition of DBIOAction and Future values, apropriate ExecutionContext needs to be imported.
+						```scala
+						import scala.concurrent.ExecutionContext.Implicits.global
+						```
 					</section>
 					<section data-markdown class="center">
 						### Case Class definition
@@ -79,6 +167,12 @@
 						```
 					</section>
 					<section data-markdown>
+						### Action creating table in db
+						```scala
+						Cats.query.schema.create
+						```
+					</section>
+					<section data-markdown>
 						### Adding to table
 						```scala
 						Cats.query ++ Cat(id = None, name = "Bella", breedId = 2, sex = "F", age = 3)
@@ -93,14 +187,25 @@
 						```
 					</section>
 					<section data-markdown>
-						### Running an action
-
+						### Joins
+						Monadic
 						```scala
-						import slick.jdbc.H2Profile.api._
-						import scala.concurrent.ExecutionContext.Implicits.global
-
+						for {
+							cat <- Cats.query
+							breed <- Breeds.quey if breed.id === cat.breedId
+						} yield {
+							(cat, breed)
+						}
 						```
-
+						Applicative
+						```scala
+						Cats.query
+							.join(Breeds.Query)
+							.on(_.breedId === _.id)
+						```
+					</section>
+					<section data-markdown>
+						### Running an action
 						```scala
 						catsDb = {
 							url = "jdbc:h2:mem:cats"
@@ -117,6 +222,42 @@
 
 						val futureResult = db.run(action)
 						```
+					</section>
+					<section data-markdown>
+						## Main concept
+
+						### Scala queries >> actions >> running actions on db and getting results
+					</section>
+					<section data-markdown>
+						## Queries
+						### No standard Scala Types but its representations (Rep)
+							* Rep[T]
+							* Query -> Rep[Seq[T]]
+							* TableQuery
+						### Similiar operations as Scala Collections like flatMap, filter, take,  groupBy etc.
+					</section>
+					<section data-markdown>
+						## Actions
+						* Action is something that you can execute on db
+						* Actions are created when calling .result on a Query, or .create, or += and similiar and have type DBIO
+						* Actions can be composed with andThen, flatMap, DBIO.seq or
+						transactionally
+						* Parts of action do not run concurrently
+					</section>
+					<section data-markdown>
+						### Queries and actions are just descriptions of operation
+
+						### Operation on database is performed when action is executed on database service.
+						```scala
+						db.run(action)
+						```
+					</section>
+					<section data-markdown>
+						## To sum up Slick gives us
+						* Table
+						* Query
+						* DBIO (action)
+						* Future (with result)
 					</section>
 				</section>
 
