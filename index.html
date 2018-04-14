@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+		<title>Slick Cats Workshop</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/solarized.css">
@@ -33,8 +33,8 @@
 						## Slick Cats Workshop
 
 
-						#### Szymon Tracz Bartosz Radzyński
-				</section>
+						#### Szymon Tracz    Bartosz Radzyński
+				</section> 
 				<section>
 					<section>
 							<h1>Who are we?<h1>
@@ -56,21 +56,21 @@
 					### Plan for today
 
 
-					1. Cloning workshop repository and preparing setup
+					1. Setup
 					2. Presentation
 					3. Solving exercises
 					4. Summary
 
 				</section>
 				<section data-markdown>
-					#### Link for presentation
+					### Link for presentation
 
-					#### https://bartosz822.github.io/slick-cats-workshop-presentation
+					### https://bartosz822.github.io/slick-cats-workshop-presentation
 				</section>
 				<section data-markdown>
-					#### Clone repository:
+					### Clone repository:
 
-					#### https://github.com/bartosz822/slick-cats-workshop
+					### https://github.com/bartosz822/slick-cats-workshop
 				</section>
 				<section >
 					<section data-markdown>
@@ -81,12 +81,14 @@
 					<img src="imgs/idea.png" height="30%" width="30%">
 					</section>
 					<section data-markdown>
-					## Setup for IntelliJ
+					### Setup for IntelliJ
+					*Recommended IntelliJ version 2018.1 or higher*
 
-					* Open project as an sbt project
-					* Wait for SBT to download all dependencies and setup project
-					* Make sure everything compiles
-					* Run tests in excercises folder (they should all fail)
+					* clone repository
+					* open project as an sbt project and wait for sbt to download all dependencies
+					* make sure everything compiles
+					* click with left click on exercises package and select 'Run all ScalaTests...' (they should all fail)
+					* follow comments and implements all workshop methods
 
 
 					*If you have any problems don't hestitate to ask for our help :)*
@@ -231,9 +233,11 @@
 					<section data-markdown>
 						## Queries
 						### No standard Scala Types but its representations (Rep)
-							* Rep[T]
-							* Query -> Rep[Seq[T]]
-							* TableQuery
+						```scala
+						Rep[T]
+						Query -> Rep[Seq[T]]
+						TableQuery
+						```
 						### Similiar operations as Scala Collections like flatMap, filter, take,  groupBy etc.
 					</section>
 					<section data-markdown>
@@ -607,6 +611,10 @@
 					</section>
 				</section>
 
+				<section data-markdown>
+					# Let's Code!
+					![](imgs/traffic.png)
+				</section>
 
 				<!--Extras-->
 
