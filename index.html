@@ -335,13 +335,13 @@
 						def present[A](a: A, s: Show[A]) = "This is " + s.show(a)
 
 						val skipper = Cat("Skipper", "Maine Coon")
-						present(skipper, showCat) //we have to provide
+						present(skipper, showCat)
 						// = "This is Skipper, Maine Coon"
 						```
 					</section>
 					<section data-markdown>
 						<script type="text/template">
-						###### Ad hoc polymorphism
+						### Ad hoc polymorphism
 						```scala
 						val showCat = new Show[Cat] {
 						//we make cat showable by telling how to show it and not by changing the cat itself
@@ -350,14 +350,14 @@
 						def present[A](a: A, s: Show[A]) = "This is " + s.show(a)
 						```
 
-						###### Implicit argument as a constraint <!-- .element: class="fragment" data-fragment-index="1" -->
+						### Implicit argument as a constraint <!-- .element: class="fragment" data-fragment-index="1" -->
 						```scala
 						def present[ThingType](thing: ThingType, s: Show[ThingType])
 						//This signature says "We can present a thing, but you have to provide Show instance for ThingType"
 						```
 						<!-- .element: class="fragment" data-fragment-index="1" -->
 
-						###### Logic about data structures is part of their instances <!-- .element: class="fragment" data-fragment-index="2" -->
+						### Logic about data structures is part of their instances <!-- .element: class="fragment" data-fragment-index="2" -->
 						```scala
 						case class Cat(name: String, breedName: String)
 						//cat is just a data structure, no logic inside
@@ -387,7 +387,6 @@
 
 						def present[A](a: A)(implicit s: Show[A]) = "This is " + s.show(a)
 						//compiler will automatically search for Show[A] by its type
-						//it is defined above so that's not a hard task
 
 						present(skipper)
 						//we said that we know how to show cat a few lines above, we don't have to repeat it
@@ -444,7 +443,7 @@
 						```
 						```scala
 						def flatMap[A, B](fa: M[A])(f: (A) => M[B]): M[B] //bind in Haskell world
-						//in many cases implemented as
+						//in standard cases implemented as
 						fa.flatMap(f)
 						```
 						If something is a monad, it's also Applicative and Functor
@@ -457,8 +456,8 @@
 						def tryFindBreedForCat(cat: Cat): OptionT[DBIO, Breed]
 						def getFavoriteFood(cat: Cat): Food
 
-						val cat: OptionT[DBIO, Cat] = repository.tryFindCat(id)
-						val breed: OptionT[DBIO, Breed] = cat.flatMap(repository.tryFindBreedForCat)
+						val cat: OptionT[DBIO, Cat] = tryFindCat(id)
+						val breed: OptionT[DBIO, Breed] = cat.flatMap(tryFindBreedForCat)
 						val favoriteFood: OptionT[DBIO, Food] = cat.map(getFavoriteFood)
 						```
 					</section>
@@ -470,8 +469,8 @@
 						def tryFindBreedForCat(cat: Cat): EitherT[DBIO, Error, Breed]
 						def getFavoriteFood(cat: Cat): Food
 
-						val cat: EitherT[DBIO, Error, Cat] = repository.tryFindCat(id)
-						val breed: EitherT[DBIO, Error, Breed] = cat.flatMap(repository.tryFindBreedForCat)
+						val cat: EitherT[DBIO, Error, Cat] = tryFindCat(id)
+						val breed: EitherT[DBIO, Error, Breed] = cat.flatMap(tryFindBreedForCat)
 						val favoriteFood: EitherT[DBIO, Error, Food] = cat.map(getFavoriteFood)
 						```
 					</section>
