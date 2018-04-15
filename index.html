@@ -177,7 +177,7 @@
 					<section data-markdown>
 						### Adding to table
 						```scala
-						Cats.query ++ Cat(id = None, name = "Bella", breedId = 2, sex = "F", age = 3)
+						Cats.query += Cat(id = None, name = "Bella", breedId = 2, sex = "F", age = 3)
 						```
 						### Accesing table
 						```scala
@@ -194,7 +194,7 @@
 						```scala
 						for {
 							cat <- Cats.query
-							breed <- Breeds.quey if breed.id === cat.breedId
+							breed <- Breeds.query if breed.id === cat.breedId
 						} yield {
 							(cat, breed)
 						}
