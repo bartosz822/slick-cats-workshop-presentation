@@ -350,7 +350,7 @@
 						def present[A](a: A, s: Show[A]) = "This is " + s.show(a)
 						```
 
-						### Implicit argument as a constraint <!-- .element: class="fragment" data-fragment-index="1" -->
+						### Argument as a constraint <!-- .element: class="fragment" data-fragment-index="1" -->
 						```scala
 						def present[ThingType](thing: ThingType, s: Show[ThingType])
 						//This signature says "We can present a thing, but you have to provide Show instance for ThingType"
