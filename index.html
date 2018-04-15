@@ -183,9 +183,9 @@
 						```scala
 						Cats.query.forEach(println)
 
-						Cats.filer(_.age < 5)
+						Cats.query.filer(_.age < 5)
 
-						Cats.map(_.name).forEach(println)
+						Cats.query.map(_.name).forEach(println)
 						```
 					</section>
 					<section data-markdown>
@@ -247,6 +247,17 @@
 						* Actions can be composed with andThen, flatMap, DBIO.seq or
 						transactionally
 						* Parts of action do not run concurrently
+					</section>
+					<section data-markdown>
+						## Action compositon
+						```scala
+						for {
+							bella <- catsRepository.findByName("Bella")
+							breed <- breedsRepository.findExistingById(bella.breedId)
+						} yield {
+							breed.id
+						}
+						```
 					</section>
 					<section data-markdown>
 						### Queries and actions are just descriptions of operation
